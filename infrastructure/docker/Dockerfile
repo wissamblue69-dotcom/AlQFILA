@@ -1,5 +1,8 @@
 FROM python:3.10-slim
 
+LABEL org.opencontainers.image.authors="Wissam Hajj Mohammad"
+LABEL org.opencontainers.image.title="AlQFILA Core Execution"
+
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 

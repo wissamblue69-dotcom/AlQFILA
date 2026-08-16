@@ -35,6 +35,7 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
       KAFKA_BROKER: kafka:9092
+      CORS_ALLOW_ORIGINS: http://localhost:3000,http://127.0.0.1:3000,https://alqfila-dash-7qn4jku7.manus.space
     depends_on:
       - redis
       - kafka
