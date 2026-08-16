@@ -1,0 +1,65 @@
+name: Infrastructure Deployment
+
+on:
+  pull_request:
+    paths:
+      - "infrastructure/terraform/**"
+      - ".github/workflows/deploy.yml"
+  push:
+    branches: [main]
+    paths:
+      - "infrastructure/terraform/**"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  contents: read
+
+# Cloud jobs remain disabled until the repository variable GCP_DEPLOYMENT_ENABLED=true
+# is deliberately configured after the production environment and secrets are reviewed.
+jobs:
+  terraform-plan:
+    if: vars.GCP_DEPLOYMENT_ENABLED == 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.*"
+      - name: Terraform init
+        working-directory: infrastructure/terraform
+        run: terraform init -backend=false
+      - name: Terraform plan
+        working-directory: infrastructure/terraform
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+        run: terraform plan -input=false -lock=false
+
+  terraform-apply:
+    if: vars.GCP_DEPLOYMENT_ENABLED == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.8.*"
+      - name: Terraform init
+        working-directory: infrastructure/terraform
+        run: terraform init -backend=false
+      - name: Terraform apply
+        working-directory: infrastructure/terraform
+        env:
+          TF_VAR_project_id: ${{ secrets.GCP_PROJECT_ID }}
+        run: terraform apply -auto-approve -input=false -lock=false

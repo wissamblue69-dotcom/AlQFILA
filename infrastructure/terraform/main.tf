@@ -34,12 +34,7 @@ resource "google_compute_firewall" "allow_internal" {
 
   allow {
     protocol = "tcp"
-    ports    = ["0-65535"]
-  }
-
-  allow {
-    protocol = "udp"
-    ports    = ["0-65535"]
+    ports    = ["8000", "6379", "9092", "9093"]
   }
 
   allow {
