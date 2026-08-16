@@ -29,10 +29,11 @@ jobs:
           python - <<'PY'
           import asyncio
           from app.main import app, health
-
           assert any(route.path == "/health" for route in app.routes)
           assert asyncio.run(health()) == {"status": "ok"}
           PY
+      - name: Build Docker image
+        run: docker build -f infrastructure/docker/Dockerfile -t alqfila-api:${{ github.sha }} .
 
   terraform:
     runs-on: ubuntu-latest
