@@ -29,8 +29,9 @@ jobs:
           python - <<'PY'
           import asyncio
           from app.main import app, health
-          assert any(route.path == "/health" for route in app.routes)
-          assert asyncio.run(health()) == {"status": "ok"}
+          paths = {route.path for route in app.routes}
+          assert {"/health", "/health/redis", "/health/kafka"}.issubset(paths)
+          assert asyncio.run(health()) == {"status": "ok", "service": "alqfila-core"}
           PY
       - name: Build Docker image
         run: docker build -f infrastructure/docker/Dockerfile -t alqfila-api:${{ github.sha }} .
